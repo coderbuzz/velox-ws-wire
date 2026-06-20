@@ -1,4 +1,4 @@
-<!-- docs: sync from coderbuzz/codex@46af4b9 -->
+<!-- docs: sync from coderbuzz/codex@7af404c -->
 
 # Velox WS Wire &mdash; `@coderbuzz/velox-ws-wire`
 
@@ -56,6 +56,46 @@ const sub = encodeSubscribe("chat");
 const msg = decode(sub);
 // => { type: 0x05, topic: "chat" }
 ```
+
+---
+
+## Benchmarks
+
+Full results at **[github.com/coderbuzz/benchmarks](https://github.com/coderbuzz/benchmarks)**.
+
+All tests on Apple M-series, Bun runtime.
+
+### Encode Throughput
+
+| Frame type | Wire (ops/s) | JSON (ops/s) | Factor |
+|---|---|---|---|
+| subscribe | **24,171,615** | 14,606,357 | **1.65x** |
+| request | **19,355,778** | 7,072,553 | **2.74x** |
+| response | **16,389,412** | 6,417,593 | **2.55x** |
+| ping | **14,396,601** | 8,162,655 | **1.76x** |
+| publish | **8,869,312** | 6,696,429 | **1.32x** |
+
+### Decode Throughput
+
+| Frame type | Wire (ops/s) | JSON (ops/s) | Factor |
+|---|---|---|---|
+| ping | **16,272,286** | 16,567,033 | 0.98x |
+| subscribe | **16,198,267** | 11,702,865 | **1.38x** |
+| request | **13,332,000** | 4,429,499 | **3.01x** |
+| response | **11,672,016** | 4,771,485 | **2.45x** |
+| publish | **7,637,717** | 4,202,166 | **1.82x** |
+
+### Wire Size
+
+| Frame type | Wire (bytes) | JSON (bytes) | Savings |
+|---|---|---|---|
+| ping | **1** | 15 | **93%** |
+| subscribe | **12** | 41 | **71%** |
+| request | **37** | 83 | **55%** |
+| response | **37** | 84 | **56%** |
+| publish | **44** | 92 | **52%** |
+
+Wire Protocol encodes frame metadata (type, correlation ID, topic) as compact binary fields instead of JSON object keys, achieving 52-93% bandwidth reduction while also being faster to encode and decode.
 
 ---
 

@@ -1,4 +1,4 @@
-<!-- docs: sync from coderbuzz/codex@46af4b9 -->
+<!-- docs: sync from coderbuzz/codex@7af404c -->
 
 # Velox WS Wire — AI Agent Knowledge File
 
