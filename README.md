@@ -1,4 +1,4 @@
-<!-- docs: sync from coderbuzz/codex@8a99d5c -->
+<!-- docs: sync from coderbuzz/codex@cd4a13b -->
 
 # Velox WS Wire &mdash; `@coderbuzz/velox-ws-wire`
 
@@ -11,7 +11,9 @@ The Wire Protocol is a compact binary framing layer for WebSocket messages. It e
 
 ## Why Wire Protocol?
 
-Standard WebSocket `JSON.stringify`/`JSON.parse` overhead adds up fast for high-throughput connections. Wire Protocol eliminates the waste:
+Standard WebSocket `JSON.stringify`/`JSON.parse` overhead adds up fast for high-throughput connections. Wire Protocol eliminates the waste.
+
+**Part of the Velox Wire ecosystem** — this codec powers both `@coderbuzz/velox-ws-wire-client` (standalone WebSocket client) and `@coderbuzz/velox-ws-wire-server` (Velox middleware). Use them together for end-to-end binary protocol, or use this codec standalone with any WebSocket implementation.
 
 | Frame type | JSON | Wire | Savings |
 |---|---|---|---|
