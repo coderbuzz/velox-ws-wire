@@ -13,7 +13,7 @@ test("encodeRequest roundtrip", () => {
   const decoded = decode(buf);
   expect(decoded?.type).toBe(MsgType.REQUEST);
   if (decoded?.type === MsgType.REQUEST) {
-    expect(decoded.id).toBe(1);
-    expect(decoded.method).toBe("hello");
+    expect(decoded.corrId).toBe(1);
+    expect(decoded.payload).toBe("hello");
   }
 });
