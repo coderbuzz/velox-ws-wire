@@ -1,5 +1,5 @@
 import { test, expect } from "bun:test";
-import { MsgType, encodePing, encodeRequest, decode, isWireBinaryFrame } from "@coderbuzz/velox-ws-wire";
+import { MsgType, encodePing, encodeRequest, decode, isWireBinaryFrame } from "../src/index";
 
 test("encodePing roundtrip", () => {
   const buf = encodePing();
