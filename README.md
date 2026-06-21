@@ -1,4 +1,4 @@
-<!-- docs: sync from coderbuzz/codex@bd2db2c -->
+<!-- docs: sync from coderbuzz/codex@e5210d1 -->
 
 # Velox WS Wire &mdash; `@coderbuzz/velox-ws-wire`
 
@@ -9,6 +9,8 @@
   <a href="https://www.npmjs.com/package/@coderbuzz/velox-ws-wire"><img src="https://img.shields.io/npm/dm/@coderbuzz/velox-ws-wire.svg?style=flat-square" alt="npm downloads" /></a>
   <a href="https://github.com/coderbuzz/velox-ws-wire/blob/main/LICENSE"><img src="https://img.shields.io/github/license/coderbuzz/velox-ws-wire.svg?style=flat-square" alt="MIT License" /></a>
   <a href="https://github.com/coderbuzz/velox-ws-wire"><img src="https://img.shields.io/github/stars/coderbuzz/velox-ws-wire.svg?style=flat-square" alt="GitHub Stars" /></a>
+  <a href="https://github.com/coderbuzz/codex/actions/workflows/ci.velox-ws-wire.yml"><img src="https://github.com/coderbuzz/codex/actions/workflows/ci.velox-ws-wire.yml/badge.svg" alt="CI" /></a>
+  <a href="https://codecov.io/gh/coderbuzz/codex"><img src="https://codecov.io/gh/coderbuzz/codex/graph/badge.svg?flag=velox-ws-wire" alt="Codecov" /></a>
 </p>
 
 The Wire Protocol is a compact binary framing layer for WebSocket messages. It encodes type, topic, correlation ID, and payload into a minimal binary format — up to 93% smaller than equivalent JSON for control frames (heartbeat, ack, pub/sub routing).
