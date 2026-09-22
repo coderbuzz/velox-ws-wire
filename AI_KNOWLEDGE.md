@@ -1,6 +1,6 @@
-<!-- docs: sync from coderbuzz/codex@b1e2bde -->
+<!-- docs: sync from coderbuzz/codex@200be78 -->
 
-# Velox WS Wire — AI Agent Knowledge File
+# Velox WS Wire: AI Agent Knowledge File
 
 **Package:** `@coderbuzz/velox-ws-wire`
 **Purpose:** Binary Wire Protocol codec for WebSocket messages. 80-93% bandwidth reduction vs JSON.
@@ -97,7 +97,7 @@ type DecodedFrame =
 ```
 Byte 0: 0x01 (PING) or 0x02 (PONG)
 ```
-Pre-allocated singleton `Uint8Array(1)` — zero allocation.
+Pre-allocated singleton `Uint8Array(1)`, zero allocation.
 
 ### REQUEST / RESPONSE (5+ bytes)
 
@@ -149,7 +149,7 @@ Bytes 1+: UTF-8 payload (optional for AUTH_OK, reason for AUTH_FAIL)
 ```ts
 const ping = encodePing(); // Uint8Array [0x01]
 const pong = encodePong(); // Uint8Array [0x02]
-// Both return shared singletons — do NOT mutate
+// Both return shared singletons, do NOT mutate
 ```
 
 ### encodeRequest / encodeResponse
@@ -321,14 +321,14 @@ function sendRpc(method: string, params: unknown, timeout = 10_000): Promise<any
 
 ## Gotchas
 
-1. `encodePing()`/`encodePong()` return **shared singletons** — do NOT mutate the returned buffer.
+1. `encodePing()`/`encodePong()` return **shared singletons**: do NOT mutate the returned buffer.
 2. Topic fields use u8 length prefix → max 255 UTF-8 bytes per topic.
 3. Correlation IDs are u32 → range 0–4294967295.
 4. `decode()` returns `null` for empty data, truncated frames, or unknown type bytes.
-5. No bounds checking on input beyond length checks — only decode trusted data.
-6. Payload is raw UTF-8, not MessagePack — callers handle serialization (JSON.stringify/parse).
-7. `isWireBinaryFrame()` only checks first byte — true positive if 0x01–0x0B, but could collide with other binary protocols.
-8. PING/PONG frames are pre-allocated as `const` at module level — never freed, negligible memory.
+5. No bounds checking on input beyond length checks: only decode trusted data.
+6. Payload is raw UTF-8, not MessagePack: callers handle serialization (JSON.stringify/parse).
+7. `isWireBinaryFrame()` only checks first byte: true positive if 0x01–0x0B, but could collide with other binary protocols.
+8. PING/PONG frames are pre-allocated as `const` at module level: never freed, negligible memory.
 
 ---
 

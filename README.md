@@ -1,6 +1,6 @@
-<!-- docs: sync from coderbuzz/codex@b1e2bde -->
+<!-- docs: sync from coderbuzz/codex@200be78 -->
 
-# Velox WS Wire &mdash; `@coderbuzz/velox-ws-wire`
+# Velox WS Wire: `@coderbuzz/velox-ws-wire`
 
 > **Binary framing protocol for WebSocket messages.** 80-93% bandwidth reduction over JSON. Zero dependencies.
 > AI agents: see [AI_KNOWLEDGE.md](https://github.com/coderbuzz/velox-ws-wire/blob/main/AI_KNOWLEDGE.md) for expert context.
@@ -13,7 +13,7 @@
   <a href="https://codecov.io/gh/coderbuzz/velox-ws-wire"><img src="https://codecov.io/gh/coderbuzz/velox-ws-wire/graph/badge.svg" alt="Codecov" /></a>
 </p>
 
-The Wire Protocol is a compact binary framing layer for WebSocket messages. It encodes type, topic, correlation ID, and payload into a minimal binary format — up to 93% smaller than equivalent JSON for control frames (heartbeat, ack, pub/sub routing).
+The Wire Protocol is a compact binary framing layer for WebSocket messages. It encodes type, topic, correlation ID, and payload into a minimal binary format: up to 93% smaller than equivalent JSON for control frames (heartbeat, ack, pub/sub routing).
 
 ---
 
@@ -21,7 +21,7 @@ The Wire Protocol is a compact binary framing layer for WebSocket messages. It e
 
 Standard WebSocket `JSON.stringify`/`JSON.parse` overhead adds up fast for high-throughput connections. Wire Protocol eliminates the waste.
 
-**Part of the Velox Wire ecosystem** — this codec powers both `@coderbuzz/velox-ws-wire-client` (standalone WebSocket client) and `@coderbuzz/velox-ws-wire-server` (Velox middleware). Use them together for end-to-end binary protocol, or use this codec standalone with any WebSocket implementation.
+**Part of the Velox Wire ecosystem.** This codec powers both `@coderbuzz/velox-ws-wire-client` (standalone WebSocket client) and `@coderbuzz/velox-ws-wire-server` (Velox middleware). Use them together for end-to-end binary protocol, or use this codec standalone with any WebSocket implementation.
 
 | Frame type | JSON | Wire | Savings |
 |---|---|---|---|
@@ -85,15 +85,15 @@ npm install @coderbuzz/velox-ws-wire
 ```ts
 import { decode, encodePing, encodeRequest, encodeSubscribe } from "@coderbuzz/velox-ws-wire";
 
-// Ping — 1 byte vs ~18 bytes JSON
+// Ping: 1 byte vs ~18 bytes JSON
 const ping = encodePing(); // Uint8Array [0x01]
 
-// Request — compact correlation + payload
+// Request: compact correlation + payload
 const req = encodeRequest(42, JSON.stringify({ method: "hello" }));
 const frame = decode(req);
 // => { type: 0x03, corrId: 42, payload: '{"method":"hello"}' }
 
-// Subscribe — topic without JSON overhead
+// Subscribe: topic without JSON overhead
 const sub = encodeSubscribe("chat");
 const msg = decode(sub);
 // => { type: 0x05, topic: "chat" }
