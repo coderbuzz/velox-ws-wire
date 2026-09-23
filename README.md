@@ -1,4 +1,4 @@
-<!-- docs: sync from coderbuzz/codex@200be78 -->
+<!-- docs: sync from coderbuzz/codex@b37bd48 -->
 
 # Velox WS Wire: `@coderbuzz/velox-ws-wire`
 
@@ -26,9 +26,8 @@ Standard WebSocket `JSON.stringify`/`JSON.parse` overhead adds up fast for high-
 | Frame type | JSON | Wire | Savings |
 |---|---|---|---|
 | Heartbeat | `~18 bytes` | `1 byte` | **~94%** |
-| Pub/sub message `{ topic: "chat", data: {...} }` | `~55 bytes` | `~8 bytes + data` | **~85%** |
-| Request-response `{ id: 1, type: "rpc", data: {...} }` | `~70 bytes` | `~12 bytes + data` | **~83%** |
-| Ack `{ id: 1, ok: true }` | `~18 bytes` | `2 bytes` | **~89%** |
+| Pub/sub message `{ topic: "chat", data: {...} }` | `~55 bytes` | `6 bytes + data` | **~89%** |
+| Request-response `{ id: 1, type: "rpc", data: {...} }` | `~70 bytes` | `5 bytes + data` | **~93%** |
 
 ---
 
@@ -52,7 +51,7 @@ All tests on Apple M-series, Bun runtime.
 
 | Frame type | Wire (ops/s) | JSON (ops/s) | Factor |
 |---|---|---|---|
-| ping | **16,272,286** | 16,567,033 | 0.98x |
+| ping | 16,272,286 | **16,567,033** | 0.98x |
 | subscribe | **16,198,267** | 11,702,865 | **1.38x** |
 | request | **13,332,000** | 4,429,499 | **3.01x** |
 | response | **11,672,016** | 4,771,485 | **2.45x** |
@@ -68,7 +67,7 @@ All tests on Apple M-series, Bun runtime.
 | response | **37** | 84 | **56%** |
 | publish | **44** | 92 | **52%** |
 
-Wire Protocol encodes frame metadata (type, correlation ID, topic) as compact binary fields instead of JSON object keys, achieving 52-93% bandwidth reduction while also being faster to encode and decode.
+Wire Protocol encodes frame metadata (type, correlation ID, topic) as compact binary fields instead of JSON object keys, achieving 52-93% bandwidth reduction. Encoding is faster for every frame type; decoding is faster for all but ping, which is at parity with JSON.
 
 ---
 
@@ -131,7 +130,7 @@ Each frame type has a dedicated encode function returning `Uint8Array`. These ar
 decode(data: ArrayBuffer | Uint8Array): DecodedFrame | null
 ```
 
-Returns `null` for empty data or unrecognized type bytes.
+Returns `null` for empty data, truncated frames, or unrecognized type bytes.
 
 ### Detection
 
@@ -165,7 +164,7 @@ Fast check if first byte matches a known type (useful for routing in mixed-proto
 | Empty buffer | `decode()` returns `null` |
 | Truncated frame | `decode()` returns `null` |
 | Unknown type byte | `decode()` returns `null` |
-| Topic length > 255 | Not possible (u8 length field) |
+| Topic longer than 255 UTF-8 bytes | Not rejected by the encoder: the u8 length byte wraps, producing a corrupt frame. Keep topics at 255 bytes or less |
 
 ---
 

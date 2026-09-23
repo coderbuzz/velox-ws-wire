@@ -1,4 +1,4 @@
-<!-- docs: sync from coderbuzz/codex@200be78 -->
+<!-- docs: sync from coderbuzz/codex@b37bd48 -->
 
 # Velox WS Wire: AI Agent Knowledge File
 
@@ -41,7 +41,12 @@ import {
   isWireBinaryFrame,
   MsgType,
 } from "@coderbuzz/velox-ws-wire";
-import type { DecodedFrame, MsgTypeValue } from "@coderbuzz/velox-ws-wire";
+import type {
+  DecodedFrame, MsgTypeValue,
+  DecodedPing, DecodedPong, DecodedRequest, DecodedResponse,
+  DecodedSubscribe, DecodedUnsubscribe, DecodedPublish, DecodedMessage,
+  DecodedAuth, DecodedAuthOk, DecodedAuthFail,
+} from "@coderbuzz/velox-ws-wire";
 ```
 
 ---
@@ -77,7 +82,7 @@ type DecodedFrame =
   | { type: MsgType.PUBLISH; topic: string; payload: string }
   | { type: MsgType.MESSAGE; topic: string; payload: string }
   | { type: MsgType.AUTH; payload: string }
-  | { type: MsgType.AUTH_OK; payload?: string }
+  | { type: MsgType.AUTH_OK; payload: string }   // '' when no data
   | { type: MsgType.AUTH_FAIL; payload: string };
 ```
 
@@ -231,7 +236,7 @@ All tests on Apple M-series, Bun runtime.
 
 | Frame type | Wire (ops/s) | JSON (ops/s) | Factor |
 |---|---|---|---|
-| ping | **16,272,286** | 16,567,033 | 0.98x |
+| ping | 16,272,286 | **16,567,033** | 0.98x |
 | subscribe | **16,198,267** | 11,702,865 | **1.38x** |
 | request | **13,332,000** | 4,429,499 | **3.01x** |
 | response | **11,672,016** | 4,771,485 | **2.45x** |
@@ -247,7 +252,17 @@ All tests on Apple M-series, Bun runtime.
 | response | **37** | 84 | **56%** |
 | publish | **44** | 92 | **52%** |
 
-Wire Protocol encodes frame metadata (type, correlation ID, topic) as compact binary fields instead of JSON object keys, achieving 52-93% bandwidth reduction while also being faster to encode and decode.
+Wire Protocol encodes frame metadata (type, correlation ID, topic) as compact binary fields instead of JSON object keys, achieving 52-93% bandwidth reduction. Encoding is faster for every frame type; decoding is faster for all but ping, which is at parity with JSON.
+
+### Header Overhead vs JSON Envelope
+
+Fixed header cost per frame, excluding the payload itself:
+
+| Frame type | JSON | Wire | Savings |
+|---|---|---|---|
+| Heartbeat | `~18 bytes` | `1 byte` | **~94%** |
+| Pub/sub message `{ topic: "chat", data: {...} }` | `~55 bytes` | `6 bytes + data` | **~89%** |
+| Request-response `{ id: 1, type: "rpc", data: {...} }` | `~70 bytes` | `5 bytes + data` | **~93%** |
 
 ---
 
@@ -322,12 +337,14 @@ function sendRpc(method: string, params: unknown, timeout = 10_000): Promise<any
 ## Gotchas
 
 1. `encodePing()`/`encodePong()` return **shared singletons**: do NOT mutate the returned buffer.
-2. Topic fields use u8 length prefix → max 255 UTF-8 bytes per topic.
-3. Correlation IDs are u32 → range 0–4294967295.
+2. Topic fields use u8 length prefix → max 255 UTF-8 bytes per topic. The encoders do not check this: a longer topic writes `length & 0xff` as the length byte and produces a corrupt frame that decodes to a truncated topic (the rest spills into the payload for PUBLISH/MESSAGE).
+3. Correlation IDs are u32 → range 0–4294967295. Larger numbers are silently truncated to their low 32 bits.
 4. `decode()` returns `null` for empty data, truncated frames, or unknown type bytes.
 5. No bounds checking on input beyond length checks: only decode trusted data.
 6. Payload is raw UTF-8, not MessagePack: callers handle serialization (JSON.stringify/parse).
-7. `isWireBinaryFrame()` only checks first byte: true positive if 0x01–0x0B, but could collide with other binary protocols.
+7. `isWireBinaryFrame()` only checks first byte: true positive if 0x01–0x0B, but could collide with other binary protocols. It returns `false` for an empty `Uint8Array` but throws `RangeError` for an empty `ArrayBuffer`.
+9. `encodeResponse(corrId, payload)` also accepts a `Uint8Array` payload, but `decode()` always returns `payload` as a UTF-8 decoded string, so non-UTF-8 bytes come back as replacement characters.
+10. Every payload-carrying decoded frame has `payload: string` (empty string when absent), including AUTH_OK.
 8. PING/PONG frames are pre-allocated as `const` at module level: never freed, negligible memory.
 
 ---
