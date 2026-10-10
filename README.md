@@ -1,4 +1,4 @@
-<!-- docs: sync from coderbuzz/codex@5aee801 -->
+<!-- docs: sync from coderbuzz/codex@aa9c4da -->
 
 # Velox WS Wire: `@coderbuzz/velox-ws-wire`
 
@@ -33,26 +33,26 @@ Standard WebSocket `JSON.stringify`/`JSON.parse` overhead adds up fast for high-
 
 ## Benchmarks
 
-Numbers from [github.com/coderbuzz/benchmarks](https://github.com/coderbuzz/benchmarks) (`results/latest.json`): reference VM (Intel Xeon Platinum 8255C @ 2.50GHz, 4 cores, Linux x64), Bun 1.4.3, run of 2026-10-10 (benchmarks `6ed4ccf`). @coderbuzz/velox-ws-wire 0.1.17 against `JSON.stringify`/`JSON.parse` of the same frame; ops/s, best of 3 processes, higher is better.
+Numbers from [github.com/coderbuzz/benchmarks](https://github.com/coderbuzz/benchmarks) (`results/latest.json`): cloud machine (Intel Xeon @ 2.80GHz, family 6 model 85 stepping 7, 4 cores, Linux x64), Bun 1.4.3, run of 2026-10-10 (benchmarks `f9601b4`). @coderbuzz/velox-ws-wire 0.1.17 against `JSON.stringify`/`JSON.parse` of the same frame; ops/s, best of 3 processes, higher is better.
 
 ### Encode Throughput
 
 | Frame type | Wire (ops/s) | JSON (ops/s) | Result |
 |---|---|---|---|
-| subscribe | **12.67M** | 10.41M | **1.22x** Wire |
-| response | **10.14M** | 5.72M | **1.77x** Wire |
-| request | **9.98M** | 5.71M | **1.75x** Wire |
-| publish | **5.95M** | 5.81M | 1.02x Wire (level) |
+| subscribe | 7.86M | **10.28M** | **1.31x** JSON |
+| response | 5.57M | 5.58M | 1.00x JSON (level) |
+| request | 5.68M | 5.56M | 1.02x Wire (level) |
+| publish | 3.84M | **5.39M** | **1.40x** JSON |
 
 ### Decode Throughput
 
 | Frame type | Wire (ops/s) | JSON (ops/s) | Result |
 |---|---|---|---|
-| ping | **89.75M** | 9.68M | **9.3x** Wire |
-| response | **6.28M** | 3.15M | **2.0x** Wire |
-| request | **6.27M** | 3.10M | **2.0x** Wire |
-| publish | **3.43M** | 3.10M | **1.11x** Wire |
-| subscribe | 6.93M | **7.63M** | **1.10x** JSON |
+| ping | **43.52M** | 9.35M | **4.7x** Wire |
+| response | **5.18M** | 3.66M | **1.42x** Wire |
+| request | **4.94M** | 3.49M | **1.41x** Wire |
+| publish | 2.95M | **3.49M** | **1.18x** JSON |
+| subscribe | 6.13M | **7.98M** | **1.30x** JSON |
 
 The public suite has no ping encode row.
 
@@ -68,7 +68,7 @@ The public suite has no ping encode row.
 | response | **37** | 84 | **56%** |
 | publish | **44** | 92 | **52%** |
 
-Wire Protocol encodes frame metadata (type, correlation ID, topic) as compact binary fields instead of JSON object keys: 52-93% fewer bytes on every frame type. In this run Wire encodes faster for every frame type (publish only by 2%, level) and decodes faster for all but subscribe, where JSON leads by 1.10x. Wire against JSON speed depends on the CPU: on the earlier cloud reference machine JSON won subscribe and publish encode.
+Wire Protocol encodes frame metadata (type, correlation ID, topic) as compact binary fields instead of JSON object keys: 52-93% fewer bytes on every frame type. In this run Wire decodes ping, request and response frames faster; JSON encodes and decodes subscribe and publish frames faster (1.18-1.40x); request and response encode are level. Wire against JSON speed depends on the CPU: on the dev VM (Xeon Platinum 8255C) Wire won every encode row. The size advantage holds on every machine.
 
 ---
 
